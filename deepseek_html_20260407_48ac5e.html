@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NEXUSS — Тир-лист | IP: NEXUSS.minerent.io</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0b10;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: #eef2ff;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Верхняя панель с IP и пользователем */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+            background: #0f111a;
+            border-radius: 60px;
+            border: 1px solid #2c7a6e;
+        }
+        .server-ip {
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4ecdc4;
+            background: rgba(78,205,196,0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            letter-spacing: 0.5px;
+        }
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .login-btn, .register-btn, .logout-btn {
+            background: #2c7a6e;
+            border: none;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .logout-btn { background: #2d3048; border: 1px solid #ff6b6b; }
+        .register-btn { background: #1a5a50; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        /* ПЕРЕЛИВАЮЩАЯСЯ НАДПИСЬ NEXUSS */
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2c7a6e, #4ecdc4, #2c7a6e, #1a5a50, #4ecdc4);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            cursor: pointer;
+            display: inline-block;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 15px rgba(78,205,196,0.3);
+            letter-spacing: 2px;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .admin-badge {
+            font-size: 0.7rem;
+            background: #2c7a6e20;
+            border: 1px solid #2c7a6e;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #2c7a6e;
+            animation: none;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: #2c7a6e;
+            margin-top: 0.5rem;
+        }
+
+        .admin-panel {
+            background: #0f111a;
+            border: 1px solid #2c7a6e;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 0 15px rgba(44,122,110,0.3);
+        }
+        .admin-panel.show { display: flex; }
+        .admin-title { font-size: 0.75rem; font-weight: 700; color: #2c7a6e; text-transform: uppercase; }
+        .admin-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .admin-btn {
+            background: #1e2130;
+            border: 1px solid #2d2f3e;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #eef2ff;
+            transition: 0.2s;
+        }
+        .admin-btn:hover { background: #2d3048; border-color: #2c7a6e; box-shadow: 0 0 8px rgba(44,122,110,0.5); }
+
+        .rankings-section {
+            background: #0f111a;
+            border-radius: 24px;
+            border: 1px solid #2d2f3e;
+            overflow: hidden;
+        }
+        .table-header {
+            display: grid;
+            grid-template-columns: 60px 200px 100px 1fr;
+            background: #0a0c12;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #2d2f3e;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #2c7a6e;
+        }
+        .players-list { display: flex; flex-direction: column; }
+        .player-row {
+            display: grid;
+            grid-template-columns: 60px 200px 100px 1fr;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #1a1d2e;
+            transition: 0.15s;
+            align-items: start;
+            cursor: pointer;
+        }
+        .player-row:hover { background: rgba(44,122,110,0.05); box-shadow: inset 0 0 20px rgba(44,122,110,0.1); }
+        .player-rank { font-weight: 700; color: #2c7a6e; font-size: 1rem; }
+        .player-info { display: flex; align-items: center; gap: 12px; }
+        .player-avatar { width: 40px; height: 40px; background: #1a1d2e; border-radius: 10px; overflow: hidden; border: 1px solid #2c7a6e; }
+        .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .player-name { font-weight: 600; font-size: 1rem; }
+        .player-points { font-weight: 700; color: #2c7a6e; font-size: 0.9rem; }
+
+        .kits-grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .kit-card {
+            background: #1a1d2e;
+            border-radius: 14px;
+            padding: 8px 14px;
+            min-width: 100px;
+            text-align: center;
+            transition: 0.2s;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            position: relative;
+            border-left: 4px solid;
+        }
+        .kit-card:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .kit-name { font-size: 0.8rem; font-weight: 700; color: #2c7a6e; }
+        .kit-tier { font-size: 1.3rem; font-weight: 800; margin-top: 4px; letter-spacing: 1px; }
+        .kit-points { font-size: 0.6rem; color: #8b92b0; margin-top: 2px; }
+        .delete-tier-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff6b6b;
+            border: none;
+            border-radius: 20px;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            cursor: pointer;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .kit-card:hover .delete-tier-btn { display: flex; }
+
+        /* ЦВЕТА ТИРОВ */
+        .tier-gold { border-left-color: #FFD700; background: linear-gradient(135deg, rgba(255,215,0,0.15), #1a1d2e); box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .tier-gold .kit-tier { color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+        .tier-silver { border-left-color: #C0C0C0; background: linear-gradient(135deg, rgba(192,192,192,0.1), #1a1d2e); }
+        .tier-silver .kit-tier { color: #E8E8E8; }
+        .tier-bronze { border-left-color: #CD7F32; background: linear-gradient(135deg, rgba(205,127,50,0.12), #1a1d2e); }
+        .tier-bronze .kit-tier { color: #E8A87C; }
+        .tier-purple { border-left-color: #9b59b6; background: linear-gradient(135deg, rgba(155,89,182,0.12), #1a1d2e); }
+        .tier-purple .kit-tier { color: #c39bd3; }
+        .tier-gray { border-left-color: #636e72; background: #1a1d2e; }
+        .tier-gray .kit-tier { color: #b2bec3; }
+
+        .admin-row-actions { display: none; gap: 6px; margin-left: 10px; }
+        .admin-panel.show ~ .rankings-section .admin-row-actions { display: flex; }
+        .small-btn {
+            background: #1e2130;
+            border: 1px solid #2d2f3e;
+            border-radius: 30px;
+            padding: 2px 8px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: #eef2ff;
+        }
+        .small-btn:hover { background: #2d3048; border-color: #2c7a6e; box-shadow: 0 0 5px rgba(44,122,110,0.4); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-card {
+            background: #121624;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            padding: 1.5rem;
+            border: 1px solid #2c7a6e;
+            box-shadow: 0 0 20px rgba(44,122,110,0.3);
+        }
+        .modal-card h3 { color: #2c7a6e; }
+        .modal-card input, .modal-card select, .modal-card button {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: #1e2335;
+            border: 1px solid #2d2f3e;
+            border-radius: 12px;
+            color: white;
+        }
+        .modal-card button { background: linear-gradient(135deg, #2c7a6e, #1a5a50); cursor: pointer; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2335;
+            padding: 0.5rem 1rem;
+            border-radius: 60px;
+            color: #2c7a6e;
+            font-size: 0.8rem;
+            z-index: 1100;
+            pointer-events: none;
+            border: 1px solid #2c7a6e;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.7rem;
+            color: #2c7a6e;
+            border-top: 1px solid #1e212e;
+            margin-top: 2rem;
+        }
+        @media (max-width: 900px) {
+            .table-header { display: none; }
+            .player-row { grid-template-columns: 1fr; gap: 0.8rem; }
+            .player-info { justify-content: space-between; }
+            .top-bar { flex-direction: column; align-items: stretch; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Верхняя панель с IP сервера и пользователем -->
+    <div class="top-bar">
+        <div class="server-ip">🖥️ NEXUSS.minerent.io</div>
+        <div class="user-panel" id="userPanel">
+            <div class="user-info" id="userInfoDisplay">🔓 Не авторизован</div>
+            <div id="authButtons">
+                <button class="login-btn" id="openLoginBtn">🔑 Вход</button>
+                <button class="register-btn" id="openRegisterBtn">📝 Регистрация</button>
+            </div>
+            <button class="logout-btn" id="logoutBtn" style="display:none;">🚪 Выйти</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo" id="adminToggleLogo">🌊 NEXUSS <span class="admin-badge" id="adminBadge">ADMIN</span></div>
+        <div class="subtitle">Тир-лист игроков | Золото, серебро, бронза, фиолет</div>
+    </div>
+
+    <div id="adminPanel" class="admin-panel">
+        <span class="admin-title">🔐 АДМИН-ПАНЕЛЬ (только для вас)</span>
+        <div class="admin-buttons">
+            <button class="admin-btn" id="openAddPlayerBtn">➕ ДОБАВИТЬ ИГРОКА</button>
+            <button class="admin-btn" id="giveAllPointsBtn">🎁 ВСЕМ +10 ОЧКОВ</button>
+        </div>
+    </div>
+
+    <div class="rankings-section">
+        <div class="table-header">
+            <span>#</span>
+            <span>Игрок</span>
+            <span>Очки</span>
+            <span>Тиры по китам (нажми на игрока)</span>
+        </div>
+        <div class="players-list" id="playersList"></div>
+    </div>
+    <footer>Нажми на игрока → выбери кит и тир | Наведи на тир для удаления | Двойной клик по логотипу — админ-панель</footer>
+</div>
+
+<!-- Модалка профиля -->
+<div id="profileModal" class="modal-overlay"><div class="modal-card" id="profileCard"></div></div>
+<!-- Модалка для выставления тира -->
+<div id="rateKitModal" class="modal-overlay"><div class="modal-card"><h3 id="rateKitTitle">🎯 Выставить тир киту</h3><select id="kitSelect"><option value="Vanilla">Vanilla</option><option value="Mace">Mace</option><option value="NethPot">NethPot</option><option value="NethOp">NethOp</option><option value="Sword">Sword</option><option value="UHC">UHC</option></select><select id="tierSelect"><option value="HT1">HT1 ★ (60 очков)</option><option value="LT1">LT1 (45 очков)</option><option value="HT2">HT2 (30 очков)</option><option value="LT2">LT2 (20 очков)</option><option value="HT3">HT3 (10 очков)</option><option value="LT3">LT3 (6 очков)</option><option value="HT4">HT4 (4 очка)</option><option value="LT4">LT4 (3 очка)</option><option value="HT5">HT5 (2 очка)</option><option value="LT5">LT5 (1 очко)</option></select><button id="confirmRateBtn">✅ ВЫСТАВИТЬ ТИР</button><button id="closeRateModalBtn">ЗАКРЫТЬ</button></div></div>
+<!-- Модалка регистрации -->
+<div id="registerModal" class="modal-overlay"><div class="modal-card"><h3>📝 РЕГИСТРАЦИЯ</h3><input type="text" id="regUsername" placeholder="Логин (для входа)"><input type="text" id="regGameNick" placeholder="Ваш игровой никнейм в Minecraft"><input type="password" id="regPassword" placeholder="Пароль"><button id="confirmRegisterBtn">✅ ЗАРЕГИСТРИРОВАТЬСЯ</button><button id="closeRegisterBtn">ЗАКРЫТЬ</button></div></div>
+<!-- Модалка входа -->
+<div id="loginModal" class="modal-overlay"><div class="modal-card"><h3>🔑 ВХОД</h3><input type="text" id="loginUsername" placeholder="Логин"><input type="password" id="loginPassword" placeholder="Пароль"><button id="confirmLoginBtn">🔓 ВОЙТИ</button><button id="closeLoginBtn">ЗАКРЫТЬ</button></div></div>
+<!-- Модалка добавления игрока -->
+<div id="playerModal" class="modal-overlay"><div class="modal-card"><h3>👑 ДОБАВИТЬ ИГРОКА (только админ)</h3><input type="text" id="newNickname" placeholder="Никнейм"><input type="number" id="newPoints" placeholder="Очки" value="0"><button id="confirmAddBtn">✅ ДОБАВИТЬ</button><button id="closeModalBtn">ЗАКРЫТЬ</button></div></div>
+<div id="toastMessage" class="toast" style="opacity:0;">✨</div>
+
+<script>
+    // ========== НОВАЯ СИСТЕМА ОЧКОВ ЗА ТИРЫ ==========
+    const TIER_POINTS = { 
+        "HT1": 60, "LT1": 45, 
+        "HT2": 30, "LT2": 20, 
+        "HT3": 10, "LT3": 6, 
+        "HT4": 4,  "LT4": 3, 
+        "HT5": 2,  "LT5": 1 
+    };
+    
+    function getTierClass(tier) {
+        if (tier === "HT1" || tier === "LT1") return "tier-gold";
+        if (tier === "HT2" || tier === "LT2") return "tier-silver";
+        if (tier === "HT3" || tier === "LT3") return "tier-bronze";
+        if (tier === "HT4" || tier === "LT4") return "tier-purple";
+        return "tier-gray";
+    }
+    
+    const AVAILABLE_KITS = ["Vanilla", "Mace", "NethPot", "NethOp", "Sword", "UHC"];
+
+    // ========== СИСТЕМА РЕГИСТРАЦИИ ==========
+    let users = JSON.parse(localStorage.getItem('nexuss_users')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('nexuss_currentUser')) || null;
+
+    // ========== ДАННЫЕ ИГРОКОВ ==========
+    let players = JSON.parse(localStorage.getItem('nexuss_players')) || [
+        { id: 1, name: "192Tenzo", points: 0, kits: {} },
+        { id: 2, name: "strafikk", points: 0, kits: {} },
+        { id: 3, name: "kayoumi", points: 0, kits: {} }
+    ];
+    let nextId = players.length ? Math.max(...players.map(p => p.id)) + 1 : 4;
+    let currentSelectedPlayerId = null;
+    let isAdminMode = false;
+
+    function saveAll() {
+        localStorage.setItem('nexuss_players', JSON.stringify(players));
+        localStorage.setItem('nexuss_users', JSON.stringify(users));
+        localStorage.setItem('nexuss_currentUser', JSON.stringify(currentUser));
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById("toastMessage");
+        toast.style.opacity = "1";
+        toast.innerText = msg;
+        toast.style.background = isError ? "#5a2a2a" : "#1e2335";
+        setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+    }
+
+    function recalcPlayerPoints(player) {
+        let total = 0;
+        if (player.kits) {
+            for (let kit in player.kits) {
+                total += TIER_POINTS[player.kits[kit]] || 0;
+            }
+        }
+        player.points = total;
+        return total;
+    }
+
+    function updateAllPoints() {
+        players.forEach(p => recalcPlayerPoints(p));
+        players.sort((a,b) => b.points - a.points);
+        players.forEach((p, idx) => { p.rank = idx + 1; });
+        saveAll();
+        renderPlayers();
+    }
+
+    function rateKit(playerId, kitName, tier) {
+        const player = players.find(p => p.id === playerId);
+        if (!player) return false;
+        if (!player.kits) player.kits = {};
+        player.kits[kitName] = tier;
+        recalcPlayerPoints(player);
+        updateAllPoints();
+        showToast(`🎯 ${player.name}: ${kitName} → ${tier} (+${TIER_POINTS[tier]} очков)`);
+        return true;
+    }
+
+    function deleteKitTier(playerId, kitName) {
+        const player = players.find(p => p.id === playerId);
+        if (!player) return false;
+        if (player.kits && player.kits[kitName]) {
+            const oldTier = player.kits[kitName];
+            delete player.kits[kitName];
+            recalcPlayerPoints(player);
+            updateAllPoints();
+            showToast(`🗑️ ${player.name}: удалён тир ${oldTier} для кита ${kitName}`);
+            return true;
+        }
+        return false;
+    }
+
+    function openProfile(playerId) {
+        const player = players.find(p => p.id === playerId);
+        if (!player) return;
+        const modal = document.getElementById("profileModal");
+        const card = document.getElementById("profileCard");
+        
+        const kitsHtml = AVAILABLE_KITS.map(kit => {
+            const currentTier = player.kits?.[kit] || "—";
+            const tierClass = currentTier !== "—" ? getTierClass(currentTier) : "";
+            return `
+                <div class="kit-card ${tierClass}" style="cursor:pointer;" data-kit="${kit}">
+                    <div class="kit-name">${kit}</div>
+                    <div class="kit-tier">${currentTier}</div>
+                    <div class="kit-points">${currentTier !== "—" ? TIER_POINTS[currentTier] + " очков" : "нет тира"}</div>
+                    ${currentTier !== "—" ? `<button class="delete-tier-btn" data-kit="${kit}" data-delete="true">✖</button>` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        card.innerHTML = `
+            <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
+                <div style="width:60px; height:60px; background:#1a1d2e; border-radius:16px; overflow:hidden; border:2px solid #2c7a6e;">
+                    <img src="https://mc-heads.net/avatar/${encodeURIComponent(player.name)}/60" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+                <div>
+                    <h2 style="color:#2c7a6e;">${escapeHtml(player.name)}</h2>
+                    <div style="font-size:0.8rem;">${player.points} очков | #${player.rank} место</div>
+                </div>
+            </div>
+            <div><strong style="color:#2c7a6e;">🎯 Тиры по китам (нажми на кит, чтобы выставить тир; наведи на тир для удаления):</strong></div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin:15px 0;">
+                ${kitsHtml}
+            </div>
+            <button id="closeProfileBtn" style="width:100%; padding:8px; background:#2d3048; border:none; border-radius:40px; cursor:pointer;">Закрыть</button>
+        `;
+        modal.style.display = "flex";
+        document.getElementById("closeProfileBtn").onclick = () => modal.style.display = "none";
+        
+        document.querySelectorAll('#profileCard .kit-card').forEach(cardEl => {
+            const kitName = cardEl.dataset.kit;
+            const deleteBtn = cardEl.querySelector('.delete-tier-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Удалить тир для кита ${kitName}?`)) {
+                        deleteKitTier(player.id, kitName);
+                        modal.style.display = "none";
+                        setTimeout(() => openProfile(player.id), 100);
+                    }
+                });
+            }
+            cardEl.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-tier-btn')) return;
+                currentSelectedPlayerId = player.id;
+                document.getElementById("rateKitTitle").innerHTML = `🎯 Выставить тир для ${kitName}`;
+                document.getElementById("kitSelect").value = kitName;
+                document.getElementById("rateKitModal").style.display = "flex";
+            });
+        });
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+    }
+
+    // Регистрация с игровым ником
+    function register(username, gameNick, password) {
+        if (!username.trim() || !gameNick.trim() || !password.trim()) { showToast("❌ Заполните все поля", true); return false; }
+        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+            showToast("❌ Пользователь уже существует", true); return false;
+        }
+        let existingPlayer = players.find(p => p.name.toLowerCase() === gameNick.toLowerCase());
+        if (!existingPlayer) {
+            const newId = nextId++;
+            const newPlayer = { id: newId, name: gameNick.trim(), points: 0, kits: {} };
+            players.push(newPlayer);
+            updateAllPoints();
+        }
+        users.push({ username: username.trim(), gameNick: gameNick.trim(), password: password });
+        currentUser = { username: username.trim(), gameNick: gameNick.trim(), isAdmin: false };
+        saveAll();
+        updateUserInterface();
+        renderPlayers();
+        showToast(`✅ Добро пожаловать, ${gameNick}!`);
+        return true;
+    }
+
+    function login(username, password) {
+        const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+        if (!user) { showToast("❌ Неверный логин или пароль", true); return false; }
+        currentUser = { username: user.username, gameNick: user.gameNick, isAdmin: false };
+        saveAll();
+        updateUserInterface();
+        showToast(`🔓 Добро пожаловать, ${user.gameNick}!`);
+        return true;
+    }
+
+    function logout() {
+        currentUser = null;
+        saveAll();
+        updateUserInterface();
+        showToast("🔒 Вы вышли из аккаунта");
+    }
+
+    function updateUserInterface() {
+        const userInfoDisplay = document.getElementById("userInfoDisplay");
+        const authButtons = document.getElementById("authButtons");
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (currentUser) {
+            userInfoDisplay.innerHTML = `✅ ${escapeHtml(currentUser.gameNick || currentUser.username)}`;
+            authButtons.style.display = "none";
+            logoutBtn.style.display = "block";
+        } else {
+            userInfoDisplay.innerHTML = "🔓 Не авторизован";
+            authButtons.style.display = "flex";
+            logoutBtn.style.display = "none";
+        }
+    }
+
+    // Админские функции (только для администратора)
+    function addNewPlayer(nickname, points) {
+        if (!isAdminMode) { showToast("❌ Только администратор может добавлять игроков", true); return false; }
+        if (!nickname.trim()) { showToast("❌ Введите ник", true); return false; }
+        if (players.some(p => p.name.toLowerCase() === nickname.toLowerCase())) {
+            showToast("❌ Такой игрок уже есть", true); return false;
+        }
+        const newId = nextId++;
+        players.push({ id: newId, name: nickname.trim(), points: parseInt(points) || 0, kits: {} });
+        updateAllPoints();
+        showToast(`✅ ${nickname} добавлен`);
+        return true;
+    }
+    
+    function giveAllPlayers(amount) {
+        if (!isAdminMode) { showToast("❌ Только администратор может выдавать очки всем", true); return; }
+        players.forEach(p => { p.points += amount; });
+        updateAllPoints();
+        showToast(`🎉 ВСЕ +${amount} очков!`);
+    }
+    
+    // УДАЛЕНИЕ ИГРОКА (доступно только администратору)
+    function deletePlayer(playerId) {
+        if (!isAdminMode) { showToast("❌ Только администратор может удалять игроков", true); return; }
+        if (confirm("Удалить игрока навсегда?")) {
+            players = players.filter(p => p.id !== playerId);
+            updateAllPoints();
+            showToast("Игрок удалён");
+        }
+    }
+    
+    function addPoints(playerId, amount) {
+        if (!isAdminMode) { showToast("❌ Только администратор может изменять очки", true); return; }
+        const player = players.find(p => p.id === playerId);
+        if (player) { player.points += amount; updateAllPoints(); showToast(`✨ ${player.name} ${amount >= 0 ? '+' : ''}${amount} очков`); }
+    }
+
+    function renderPlayers() {
+        const container = document.getElementById("playersList");
+        if (!container) return;
+        
+        container.innerHTML = players.map(player => {
+            const kitSummary = AVAILABLE_KITS.map(kit => {
+                const tier = player.kits?.[kit];
+                if (tier) return `<span style="background:#1a1d2e; padding:2px 6px; border-radius:20px; font-size:0.6rem; color:${tier === 'HT1' || tier === 'LT1' ? '#FFD700' : (tier === 'HT2' || tier === 'LT2' ? '#C0C0C0' : (tier === 'HT3' || tier === 'LT3' ? '#CD7F32' : '#9b59b6'))};">${kit}: ${tier}</span>`;
+                return null;
+            }).filter(Boolean).slice(0, 3);
+            const summaryHtml = kitSummary.length ? kitSummary.join(' ') : '<span style="color:#4a5370;">нет тиров</span>';
+            return `
+                <div class="player-row" data-player-id="${player.id}">
+                    <div class="player-rank">${player.rank}</div>
+                    <div class="player-info">
+                        <div class="player-avatar"><img src="https://mc-heads.net/avatar/${encodeURIComponent(player.name)}/40" alt="${escapeHtml(player.name)}"></div>
+                        <div class="player-name">${escapeHtml(player.name)}</div>
+                    </div>
+                    <div class="player-points">${player.points} очков</div>
+                    <div class="kits-grid">
+                        ${summaryHtml}
+                        ${isAdminMode ? `<div class="admin-row-actions">
+                            <button class="small-btn add-points-btn" data-id="${player.id}" data-points="10">+10</button>
+                            <button class="small-btn add-points-btn" data-id="${player.id}" data-points="-10">-10</button>
+                            <button class="small-btn delete-player-btn" data-id="${player.id}">🗑️ Удалить</button>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join("");
+        
+        document.querySelectorAll('.player-row').forEach(row => {
+            const pid = parseInt(row.dataset.playerId);
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.admin-row-actions') || e.target.closest('.small-btn')) return;
+                openProfile(pid);
+            });
+        });
+        
+        if (isAdminMode) {
+            document.querySelectorAll('.add-points-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); addPoints(parseInt(btn.dataset.id), parseInt(btn.dataset.points)); });
+            });
+            document.querySelectorAll('.delete-player-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); deletePlayer(parseInt(btn.dataset.id)); });
+            });
+        }
+    }
+
+    // Админ-панель (двойной клик по логотипу)
+    const adminPanel = document.getElementById("adminPanel");
+    const logo = document.getElementById("adminToggleLogo");
+    logo.addEventListener("dblclick", () => {
+        isAdminMode = !isAdminMode;
+        if (isAdminMode) {
+            adminPanel.classList.add("show");
+            showToast("🔓 Админ-панель активирована (только для вас)");
+        } else {
+            adminPanel.classList.remove("show");
+            showToast("🔒 Админ-панель скрыта");
+        }
+        renderPlayers();
+    });
+
+    // Модалки
+    const registerModal = document.getElementById("registerModal");
+    const loginModal = document.getElementById("loginModal");
+    document.getElementById("openRegisterBtn").onclick = () => registerModal.style.display = "flex";
+    document.getElementById("openLoginBtn").onclick = () => loginModal.style.display = "flex";
+    document.getElementById("closeRegisterBtn").onclick = () => registerModal.style.display = "none";
+    document.getElementById("closeLoginBtn").onclick = () => loginModal.style.display = "none";
+    document.getElementById("confirmRegisterBtn").onclick = () => {
+        if (register(document.getElementById("regUsername").value, document.getElementById("regGameNick").value, document.getElementById("regPassword").value))
+            registerModal.style.display = "none";
+    };
+    document.getElementById("confirmLoginBtn").onclick = () => {
+        if (login(document.getElementById("loginUsername").value, document.getElementById("loginPassword").value))
+            loginModal.style.display = "none";
+    };
+    document.getElementById("logoutBtn").onclick = logout;
+
+    const rateModal = document.getElementById("rateKitModal");
+    document.getElementById("confirmRateBtn").onclick = () => {
+        const kit = document.getElementById("kitSelect").value;
+        const tier = document.getElementById("tierSelect").value;
+        if (currentSelectedPlayerId && kit && tier) { rateKit(currentSelectedPlayerId, kit, tier); rateModal.style.display = "none"; }
+        else showToast("❌ Ошибка", true);
+    };
+    document.getElementById("closeRateModalBtn").onclick = () => rateModal.style.display = "none";
+    rateModal.onclick = (e) => { if (e.target === rateModal) rateModal.style.display = "none"; };
+
+    const playerModal = document.getElementById("playerModal");
+    document.getElementById("openAddPlayerBtn").onclick = () => {
+        if (!isAdminMode) { showToast("❌ Только администратор может добавлять игроков. Двойной клик по логотипу для входа в админ-панель.", true); return; }
+        playerModal.style.display = "flex";
+    };
+    document.getElementById("closeModalBtn").onclick = () => playerModal.style.display = "none";
+    document.getElementById("confirmAddBtn").onclick = () => { if (addNewPlayer(document.getElementById("newNickname").value, document.getElementById("newPoints").value)) playerModal.style.display = "none"; };
+    document.getElementById("giveAllPointsBtn").onclick = () => giveAllPlayers(10);
+    playerModal.onclick = (e) => { if (e.target === playerModal) playerModal.style.display = "none"; };
+    [registerModal, loginModal, rateModal, playerModal].forEach(modal => {
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+    });
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+    
+    updateUserInterface();
+    updateAllPoints();
+    renderPlayers();
+    saveAll();
+</script>
+</body>
+</html>
